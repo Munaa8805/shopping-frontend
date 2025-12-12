@@ -48,13 +48,13 @@ function AppContent() {
 
 function App() {
   return (
-    <ProductProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <ProductProvider>
         <CartProvider>
           <AppContent />
         </CartProvider>
-      </AuthProvider>
-    </ProductProvider>
+      </ProductProvider>
+    </AuthProvider>
   );
 }
 

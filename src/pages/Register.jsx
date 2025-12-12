@@ -14,7 +14,6 @@ const Register = () => {
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -41,11 +40,6 @@ const Register = () => {
       return false;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return false;
-    }
-
     if (!formData.name.trim()) {
       setError("Name is required");
       return false;
@@ -65,12 +59,32 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      await register({
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        password: formData.password,
-      });
-      navigate("/profile");
+      await fetch("http://localhost:6000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("register data", data);
+          // if (data.success) {
+          //   navigate("/profile");
+          // } else {
+          //   setError(data.message);
+          // }
+        })
+        .catch((err) => {
+          setError(err.message);
+        });
+      // await register({
+      //   name: formData.name.trim(),
+      //   email: formData.email.trim(),
+      //   password: formData.password,
+      // });
+
+      // navigate("/profile");
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {
@@ -133,21 +147,6 @@ const Register = () => {
             <span className="form-hint">Must be at least 6 characters</span>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Re-enter your password"
-              required
-              autoComplete="new-password"
-              minLength="6"
-            />
-          </div>
-
           <button
             type="submit"
             className="register-button"
@@ -171,4 +170,3 @@ const Register = () => {
 };
 
 export default Register;
-
