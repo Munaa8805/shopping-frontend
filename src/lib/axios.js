@@ -9,7 +9,7 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 // Attach token on refresh
-api.interceptors.request.use((config) => {
+axiosInstance.interceptors.request.use((config) => {
   const token = getStoredAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -19,7 +19,7 @@ api.interceptors.request.use((config) => {
 });
 
 // Refresh token after expire
-api.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
@@ -35,7 +35,7 @@ api.interceptors.response.use(
         const { accessToken: newToken } = await refreshAccessToken();
         setStoredAccessToken(newToken);
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return api(originalRequest);
+        return axiosInstance(originalRequest);
       } catch (err) {
         console.error("Refresh token failed", err);
       }
