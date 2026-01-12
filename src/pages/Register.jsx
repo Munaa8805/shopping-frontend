@@ -1,19 +1,22 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
 import { useAuth } from "../context/AuthContext";
 import "./Register.css";
+import axiosInstance from "../lib/axios";
 
 /**
  * Register page component
  * Allows users to create a new account
  */
 const Register = () => {
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated , setIsAuthenticated , setUser} = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
+    name: "Himanshu",
+    email: "himanshu@gmail.com",
+    password: "123456",
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -35,8 +38,8 @@ const Register = () => {
   };
 
   const validateForm = () => {
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (formData.password.length < 3) {
+      setError("Password must be at least 3 characters long");
       return false;
     }
 
@@ -58,35 +61,28 @@ const Register = () => {
 
     setIsLoading(true);
 
+    console.log("formData", formData);
+
     try {
-      await fetch("http://localhost:6000/api/auth/register", {
-        method: "POST",
+      const response = await axios.post("https://backend-ideas-8pfw.onrender.com/api/v1/auth/register", formData, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("register data", data);
-          // if (data.success) {
-          //   navigate("/profile");
-          // } else {
-          //   setError(data.message);
-          // }
-        })
-        .catch((err) => {
-          setError(err.message);
-        });
-      // await register({
-      //   name: formData.name.trim(),
-      //   email: formData.email.trim(),
-      //   password: formData.password,
-      // });
-
-      // navigate("/profile");
+      });
+      // console.log("response", response);
+      if (response.status === 201) {
+        toast.success("Account created successfully");
+        localStorage.setItem("accessToken", response.data.accessToken);
+        // localStorage.setItem("refreshToken", response.data.refreshToken);
+        localStorage.setItem("user", JSON.stringify(response.data.data));
+        setIsAuthenticated(true);
+        setUser(response.data.data);
+        navigate("/");
+      } else {
+        setError(response.data.message);
+      }
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
